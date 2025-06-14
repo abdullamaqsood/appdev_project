@@ -1,47 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../data/repositories/expense_repository.dart';
 import '../../../data/repositories/income_repository.dart';
 import '../../../data/models/expense_model.dart';
 import '../../../data/models/income_model.dart';
+import '../../../logic/blocs/reports/reports_bloc.dart';
+import '../../../logic/blocs/reports/reports_event.dart';
+import '../../../logic/blocs/reports/reports_state.dart';
 
-class ReportsScreen extends StatefulWidget {
+class ReportsScreen extends StatelessWidget {
   const ReportsScreen({super.key});
 
-  @override
-  State<ReportsScreen> createState() => _ReportsScreenState();
-}
-
-class _ReportsScreenState extends State<ReportsScreen> {
-  final DateTime currentMonth =
-      DateTime(DateTime.now().year, DateTime.now().month);
-  List<ExpenseModel> expenses = [];
-  double totalIncome = 0.0;
-  bool loading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadData();
-  }
-
-  Future<void> _loadData() async {
-    setState(() => loading = true);
-
-    final expenseData =
-        await ExpenseRepository().fetchUserExpensesByMonth(currentMonth);
-    final incomeData =
-        await IncomeRepository().fetchUserIncomeByMonth(currentMonth);
-
-    setState(() {
-      expenses = expenseData;
-      totalIncome = incomeData.fold(0.0, (sum, income) => sum + income.amount);
-      loading = false;
-    });
-  }
-
-  Map<String, double> _categoryTotals() {
+  Map<String, double> _categoryTotals(List<ExpenseModel> expenses) {
     final Map<String, double> totals = {};
     for (var e in expenses) {
       totals[e.category] = (totals[e.category] ?? 0) + e.amount;
@@ -49,7 +21,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
     return totals;
   }
 
-  List<BarChartGroupData> _barChartData() {
+  List<BarChartGroupData> _barChartData(List<ExpenseModel> expenses) {
     final Map<int, double> dailyTotals = {};
     for (var e in expenses) {
       int day = e.date.day;
@@ -74,149 +46,169 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final categoryData = _categoryTotals();
-    final barGroups = _barChartData();
-    final totalExpense = expenses.fold(0.0, (sum, e) => sum + e.amount);
-    final balance = totalIncome - totalExpense;
-    final double maxY = barGroups.isEmpty
-        ? 10
-        : barGroups
-                .map((e) => e.barRods.first.toY)
-                .reduce((a, b) => a > b ? a : b) +
-            10;
+    final DateTime currentMonth =
+        DateTime(DateTime.now().year, DateTime.now().month);
+    return BlocProvider(
+      create: (_) => ReportsBloc(
+        expenseRepository: ExpenseRepository(),
+        incomeRepository: IncomeRepository(),
+      )..add(LoadReports(month: currentMonth)),
+      child: BlocBuilder<ReportsBloc, ReportsState>(
+        builder: (context, state) {
+          if (state is ReportsLoading || state is ReportsInitial) {
+            return Scaffold(
+              appBar: AppBar(title: const Text("Reports")),
+              body: const Center(child: CircularProgressIndicator()),
+            );
+          } else if (state is ReportsLoaded) {
+            final expenses = state.expenses;
+            final incomes = state.incomes;
+            final categoryData = _categoryTotals(expenses);
+            final barGroups = _barChartData(expenses);
+            final totalExpense = expenses.fold(0.0, (sum, e) => sum + e.amount);
+            final totalIncome = incomes.fold(0.0, (sum, i) => sum + i.amount);
+            final balance = totalIncome - totalExpense;
+            final double maxY = barGroups.isEmpty
+                ? 10
+                : barGroups
+                        .map((e) => e.barRods.first.toY)
+                        .reduce((a, b) => a > b ? a : b) +
+                    10;
 
-    return Scaffold(
-      appBar: AppBar(title: const Text("Reports")),
-      body: loading
-          ? const Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: ListView(
-                children: [
-                  Text("Month: ${DateFormat.yMMM().format(currentMonth)}",
-                      style: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.w500)),
-                  const SizedBox(height: 20),
-
-                  // Summary Row
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _summaryTile("Income", totalIncome, Colors.green),
-                      _summaryTile("Expense", totalExpense, Colors.red),
-                      _summaryTile("Balance", balance,
-                          balance >= 0 ? Colors.blue : Colors.redAccent),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Category Breakdown
-                  const Text("Category Breakdown",
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 12),
-                  categoryData.isEmpty
-                      ? const Text("No expenses this month.")
-                      : Column(
-                          children: categoryData.entries.map((e) {
-                            return Container(
-                              margin: const EdgeInsets.symmetric(vertical: 4),
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 12, horizontal: 12),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(10),
-                                boxShadow: [
-                                  BoxShadow(
-                                      color: Colors.grey.shade200,
-                                      blurRadius: 5)
-                                ],
-                              ),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Row(
-                                    children: [
-                                      const Icon(Icons.label_outline,
-                                          size: 20, color: Colors.grey),
-                                      const SizedBox(width: 8),
-                                      Text(e.key,
-                                          style: const TextStyle(
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.w500)),
-                                    ],
-                                  ),
-                                  Text("\$${e.value.toStringAsFixed(2)}",
-                                      style: const TextStyle(
-                                          fontWeight: FontWeight.w600)),
-                                ],
-                              ),
-                            );
-                          }).toList(),
-                        ),
-
-                  const SizedBox(height: 32),
-
-                  // Spending Trend
-                  const Text("Spending Trend",
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 12),
-                  barGroups.isEmpty
-                      ? const Text("No data to display.")
-                      : SizedBox(
-                          height: 220,
-                          child: BarChart(
-                            BarChartData(
-                              // barTouchData: BarTouchData(enabled: false),
-                              barGroups: barGroups,
-                              gridData: FlGridData(show: true),
-                              borderData: FlBorderData(show: false),
-                              maxY: barGroups.isEmpty ? 10 : null,
-                              alignment: BarChartAlignment.start,
-                              titlesData: FlTitlesData(
-                                bottomTitles: AxisTitles(
-                                  sideTitles: SideTitles(
-                                    showTitles: true,
-                                    interval: 1,
-                                    getTitlesWidget: (value, meta) {
-                                      return Padding(
-                                        padding: const EdgeInsets.only(top: 6),
-                                        child: Text(
-                                          value.toInt().toString(),
-                                          style: const TextStyle(fontSize: 10),
-                                        ),
-                                      );
-                                    },
-                                  ),
+            return Scaffold(
+              appBar: AppBar(title: const Text("Reports")),
+              body: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: ListView(
+                  children: [
+                    Text("Month: " + DateFormat.yMMM().format(currentMonth),
+                        style: const TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.w500)),
+                    const SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _summaryTile("Income", totalIncome, Colors.green),
+                        _summaryTile("Expense", totalExpense, Colors.red),
+                        _summaryTile("Balance", balance,
+                            balance >= 0 ? Colors.blue : Colors.redAccent),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    const Text("Category Breakdown",
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 12),
+                    categoryData.isEmpty
+                        ? const Text("No expenses this month.")
+                        : Column(
+                            children: categoryData.entries.map((e) {
+                              return Container(
+                                margin: const EdgeInsets.symmetric(vertical: 4),
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 12, horizontal: 12),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(10),
+                                  boxShadow: [
+                                    BoxShadow(
+                                        color: Colors.grey.shade200,
+                                        blurRadius: 5)
+                                  ],
                                 ),
-                                leftTitles: AxisTitles(
-                                  sideTitles: SideTitles(
-                                    showTitles: true,
-                                    reservedSize: 28,
-                                    interval: maxY > 50 ? 20 : 10,
-                                    getTitlesWidget: (value, _) => Text(
-                                      "\$${value.toInt()}",
-                                      style: const TextStyle(fontSize: 10),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        const Icon(Icons.label_outline,
+                                            size: 20, color: Colors.grey),
+                                        const SizedBox(width: 8),
+                                        Text(e.key,
+                                            style: const TextStyle(
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.w500)),
+                                      ],
+                                    ),
+                                    Text("\$${e.value.toStringAsFixed(2)}",
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.w600)),
+                                  ],
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                    const SizedBox(height: 32),
+                    const Text("Spending Trend",
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 12),
+                    barGroups.isEmpty
+                        ? const Text("No data to display.")
+                        : SizedBox(
+                            height: 220,
+                            child: BarChart(
+                              BarChartData(
+                                barGroups: barGroups,
+                                gridData: FlGridData(show: true),
+                                borderData: FlBorderData(show: false),
+                                maxY: barGroups.isEmpty ? 10 : null,
+                                alignment: BarChartAlignment.start,
+                                titlesData: FlTitlesData(
+                                  bottomTitles: AxisTitles(
+                                    sideTitles: SideTitles(
+                                      showTitles: true,
+                                      interval: 1,
+                                      getTitlesWidget: (value, meta) {
+                                        return Padding(
+                                          padding:
+                                              const EdgeInsets.only(top: 6),
+                                          child: Text(
+                                            value.toInt().toString(),
+                                            style:
+                                                const TextStyle(fontSize: 10),
+                                          ),
+                                        );
+                                      },
                                     ),
                                   ),
-                                ),
-                                topTitles: AxisTitles(
-                                  sideTitles: SideTitles(showTitles: false),
-                                ),
-                                rightTitles: AxisTitles(
-                                  sideTitles: SideTitles(showTitles: false),
+                                  leftTitles: AxisTitles(
+                                    sideTitles: SideTitles(
+                                      showTitles: true,
+                                      reservedSize: 28,
+                                      interval: maxY > 50 ? 20 : 10,
+                                      getTitlesWidget: (value, _) => Text(
+                                        "\$${value.toInt()}",
+                                        style: const TextStyle(fontSize: 10),
+                                      ),
+                                    ),
+                                  ),
+                                  topTitles: AxisTitles(
+                                    sideTitles: SideTitles(showTitles: false),
+                                  ),
+                                  rightTitles: AxisTitles(
+                                    sideTitles: SideTitles(showTitles: false),
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-
-                  const SizedBox(height: 32),
-                ],
+                    const SizedBox(height: 32),
+                  ],
+                ),
               ),
-            ),
+            );
+          } else if (state is ReportsError) {
+            return Scaffold(
+              appBar: AppBar(title: const Text("Reports")),
+              body: Center(child: Text("Error: ${state.message}")),
+            );
+          }
+          return const SizedBox.shrink();
+        },
+      ),
     );
   }
 
