@@ -6,7 +6,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:pdf/pdf.dart';
-
 import '../../../logic/blocs/dashboard/dashboard_bloc.dart';
 import '../../../logic/blocs/dashboard/dashboard_event.dart';
 import '../../../logic/blocs/dashboard/dashboard_state.dart';
@@ -21,6 +20,7 @@ import '../expense/add_expense_screen.dart';
 import '../income/add_income_screen.dart';
 import '../budget/budget_screen.dart';
 import '../reports/reports_screen.dart';
+import '../debt/debt_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -241,7 +241,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       _buildDashboardContent(),
       BudgetScreen(onTabSelected: (i) => setState(() => _selectedIndex = i)),
       const ReportsScreen(),
-      const Center(child: Text("Debt Screen")),
+      const DebtScreen(),
       const Center(child: Text("Profile Screen")),
     ];
 
