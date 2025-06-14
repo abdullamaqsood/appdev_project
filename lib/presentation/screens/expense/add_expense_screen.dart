@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
 import '../../../data/models/expense_model.dart';
+import '../../../data/models/budget_model.dart';
 import '../../../logic/blocs/expense/expense_bloc.dart';
 import '../../../logic/blocs/expense/expense_event.dart';
 import '../../../logic/blocs/expense/expense_state.dart';
 import '../../../data/repositories/expense_repository.dart';
+import '../../../data/repositories/budget_repository.dart';
+import '../../../utils/notification_helper.dart';
 
 class AddExpenseScreen extends StatefulWidget {
   final bool isEdit;
@@ -65,6 +68,70 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     final note = _noteController.text;
 
     if (title.isEmpty || amount <= 0) return;
+
+    // Check budget before adding expense
+    final budgets = await BudgetRepository().fetchBudgets();
+    final categoryBudget = budgets.firstWhere(
+      (budget) => budget.category == _selectedCategory,
+      orElse: () => BudgetModel(
+        id: '',
+        category: '',
+        limit: 0,
+        createdAt: DateTime.now(),
+      ),
+    );
+
+    if (categoryBudget.id.isNotEmpty) {
+      // Check if we found a real budget
+      // Get current month's expenses for this category
+      final currentMonth = DateTime(DateTime.now().year, DateTime.now().month);
+      final expenses =
+          await ExpenseRepository().fetchUserExpensesByMonth(currentMonth);
+      final categoryExpenses =
+          expenses.where((e) => e.category == _selectedCategory);
+      double totalSpent =
+          categoryExpenses.fold<double>(0, (sum, e) => sum + e.amount);
+
+      // If this is an edit, subtract the old amount from totalSpent
+      if (widget.isEdit) {
+        final oldExpense = expenses.firstWhere(
+          (e) => e.id == widget.id,
+          orElse: () => ExpenseModel(
+            id: '',
+            title: '',
+            category: '',
+            amount: 0,
+            date: DateTime.now(),
+            note: '',
+          ),
+        );
+        if (oldExpense.id.isNotEmpty) {
+          // Check if we found a real expense
+          totalSpent -= oldExpense.amount;
+        }
+      }
+
+      // Check if adding this expense would exceed the budget
+      if (totalSpent + amount > categoryBudget.limit) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Warning: This expense will exceed your ${_selectedCategory} budget of \$${categoryBudget.limit}',
+              ),
+              backgroundColor: Colors.orange,
+            ),
+          );
+          // Show notification
+          await NotificationHelper.showNotification(
+            id: 1,
+            title: 'Budget Alert',
+            body:
+                'Your ${_selectedCategory} expense will exceed the budget of \$${categoryBudget.limit}',
+          );
+        }
+      }
+    }
 
     final expense = ExpenseModel(
       id: id,

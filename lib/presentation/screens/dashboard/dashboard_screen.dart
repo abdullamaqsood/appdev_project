@@ -24,6 +24,8 @@ import '../reports/reports_screen.dart';
 import '../debt/debt_screen.dart';
 import '../notifications/notifications_screen.dart';
 import '../../../data/repositories/debt_repository.dart';
+import '../../../data/repositories/budget_repository.dart';
+import '../../../data/models/budget_model.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -44,6 +46,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     super.initState();
     context.read<DashboardBloc>().add(LoadUserExpenses());
     _checkDueDebts();
+    _checkBudgetBreaches();
   }
 
   Future<void> _checkDueDebts() async {
@@ -67,6 +70,35 @@ class _DashboardScreenState extends State<DashboardScreen> {
         title: 'Due Payments',
         body: 'You have loans/debts due soon. Check notifications for details.',
       );
+    }
+  }
+
+  Future<void> _checkBudgetBreaches() async {
+    final budgets = await BudgetRepository().fetchBudgets();
+    if (budgets.isEmpty) return;
+
+    final currentMonth = DateTime(DateTime.now().year, DateTime.now().month);
+    final expenses =
+        await ExpenseRepository().fetchUserExpensesByMonth(currentMonth);
+
+    // Calculate total spent for each category
+    final Map<String, double> categoryTotals = {};
+    for (var expense in expenses) {
+      categoryTotals[expense.category] =
+          (categoryTotals[expense.category] ?? 0) + expense.amount;
+    }
+
+    // Check each budget
+    for (var budget in budgets) {
+      final totalSpent = categoryTotals[budget.category] ?? 0;
+      if (totalSpent > budget.limit) {
+        await NotificationHelper.showNotification(
+          id: 2,
+          title: 'Budget Breached',
+          body:
+              'Your ${budget.category} expenses (\$${totalSpent.toStringAsFixed(2)}) have exceeded the budget of \$${budget.limit}',
+        );
+      }
     }
   }
 
