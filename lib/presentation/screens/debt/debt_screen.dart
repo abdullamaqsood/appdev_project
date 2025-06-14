@@ -37,12 +37,26 @@ class _DebtScreenState extends State<DebtScreen> {
                 const Text("Loans Given",
                     style:
                         TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                ...loans.map((d) => _buildTile(d, true)),
+                if (loans.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8),
+                    child:
+                        Text("No loans", style: TextStyle(color: Colors.grey)),
+                  )
+                else
+                  ...loans.map((d) => _buildTile(d, true)),
                 const SizedBox(height: 24),
                 const Text("Debts Taken",
                     style:
                         TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                ...debts.map((d) => _buildTile(d, false)),
+                if (debts.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8),
+                    child:
+                        Text("No debts", style: TextStyle(color: Colors.grey)),
+                  )
+                else
+                  ...debts.map((d) => _buildTile(d, false)),
               ],
             );
           } else if (state is DebtFailure) {

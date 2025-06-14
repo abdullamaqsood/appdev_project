@@ -33,7 +33,9 @@ class LoginScreen extends StatelessWidget {
               } else if (state is AuthSuccess) {
                 Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (_) => const DashboardScreen()),
+                  MaterialPageRoute(
+                      builder: (_) =>
+                          const DashboardScreen(initialTabIndex: 0)),
                 );
               }
             },

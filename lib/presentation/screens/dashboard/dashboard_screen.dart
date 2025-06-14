@@ -26,9 +26,11 @@ import '../notifications/notifications_screen.dart';
 import '../../../data/repositories/debt_repository.dart';
 import '../../../data/repositories/budget_repository.dart';
 import '../../../data/models/budget_model.dart';
+import '../profile/profile_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({super.key});
+  final int initialTabIndex;
+  const DashboardScreen({super.key, this.initialTabIndex = 0});
 
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
@@ -42,6 +44,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   void initState() {
     super.initState();
+    context
+        .read<DashboardBloc>()
+        .add(DashboardTabChanged(widget.initialTabIndex));
     context.read<DashboardBloc>().add(LoadUserExpenses());
     _checkDueDebts();
     _checkBudgetBreaches();
@@ -309,7 +314,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   context.read<DashboardBloc>().add(DashboardTabChanged(i))),
           const ReportsScreen(),
           const DebtScreen(),
-          const Center(child: Text("Profile Screen")),
+          const ProfileScreen(),
         ];
 
         return Scaffold(
