@@ -1,10 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:uuid/uuid.dart';
-import '../../data/models/income_model.dart';
-import '../../blocs/income/income_bloc.dart';
-import '../../blocs/income/income_event.dart';
-import '../../blocs/income/income_state.dart';
 import '../../data/repositories/income_repository.dart';
 import '../../blocs/income_form/income_form_bloc.dart';
 import '../../blocs/income_form/income_form_event.dart';

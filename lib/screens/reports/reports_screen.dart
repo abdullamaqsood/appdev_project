@@ -5,7 +5,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/repositories/expense_repository.dart';
 import '../../data/repositories/income_repository.dart';
 import '../../data/models/expense_model.dart';
-import '../../data/models/income_model.dart';
 import '../../blocs/reports/reports_bloc.dart';
 import '../../blocs/reports/reports_event.dart';
 import '../../blocs/reports/reports_state.dart';

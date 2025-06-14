@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:uuid/uuid.dart';
-import '../../data/models/debt_model.dart';
-import '../../blocs/debt/debt_bloc.dart';
-import '../../blocs/debt/debt_event.dart';
 import '../../blocs/debt_form/debt_form_bloc.dart';
 import '../../blocs/debt_form/debt_form_event.dart';
 import '../../blocs/debt_form/debt_form_state.dart';
