@@ -120,6 +120,76 @@ class _BudgetScreenState extends State<BudgetScreen> {
     );
   }
 
+  void _showEditBudgetDialog(BudgetModel budget) {
+    final limitController =
+        TextEditingController(text: budget.limit.toString());
+    final categories = ['Food', 'Transport', 'Shopping', 'Bills', 'Other'];
+    String selectedCategory = budget.category;
+
+    showDialog(
+      context: context,
+      builder: (_) => BlocBuilder<BudgetBloc, BudgetState>(
+        builder: (context, state) {
+          List<String> availableCategories = categories;
+          if (state is BudgetLoaded) {
+            availableCategories = categories
+                .where((cat) =>
+                    cat == budget.category ||
+                    !state.budgets
+                        .any((b) => b.category == cat && b.id != budget.id))
+                .toList();
+          }
+          return AlertDialog(
+            title: const Text("Edit Budget"),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                DropdownButtonFormField<String>(
+                  value: selectedCategory,
+                  items: availableCategories
+                      .map((cat) => DropdownMenuItem(
+                            value: cat,
+                            child: Text(cat),
+                          ))
+                      .toList(),
+                  onChanged: (val) {
+                    if (val != null) selectedCategory = val;
+                  },
+                  decoration: const InputDecoration(labelText: 'Category'),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: limitController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(labelText: 'Limit'),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text("Cancel"),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  final updatedBudget = BudgetModel(
+                    id: budget.id,
+                    category: selectedCategory,
+                    limit: double.tryParse(limitController.text) ?? 0,
+                    createdAt: budget.createdAt,
+                  );
+                  context.read<BudgetBloc>().add(UpdateBudget(updatedBudget));
+                  Navigator.pop(context);
+                },
+                child: const Text("Save"),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -164,14 +234,26 @@ class _BudgetScreenState extends State<BudgetScreen> {
                               leading: const Icon(Icons.wallet),
                               title: Text(budget.category),
                               subtitle: Text("Limit: \$${budget.limit}"),
-                              trailing: IconButton(
-                                icon:
-                                    const Icon(Icons.delete, color: Colors.red),
-                                onPressed: () {
-                                  context
-                                      .read<BudgetBloc>()
-                                      .add(DeleteBudget(budget.id));
-                                },
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.edit,
+                                        color: Colors.blue),
+                                    onPressed: () {
+                                      _showEditBudgetDialog(budget);
+                                    },
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete,
+                                        color: Colors.red),
+                                    onPressed: () {
+                                      context
+                                          .read<BudgetBloc>()
+                                          .add(DeleteBudget(budget.id));
+                                    },
+                                  ),
+                                ],
                               ),
                             ),
                           );

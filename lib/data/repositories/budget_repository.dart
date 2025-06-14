@@ -43,4 +43,16 @@ class BudgetRepository {
         .doc(id)
         .delete();
   }
+
+  Future<void> updateBudget(BudgetModel budget) async {
+    final uid = _auth.currentUser?.uid;
+    if (uid == null) throw Exception("User not logged in");
+
+    await _firestore
+        .collection('users')
+        .doc(uid)
+        .collection('budgets')
+        .doc(budget.id)
+        .update(budget.toMap());
+  }
 }

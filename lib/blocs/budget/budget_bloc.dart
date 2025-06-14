@@ -34,5 +34,14 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
         emit(BudgetFailure(e.toString()));
       }
     });
+
+    on<UpdateBudget>((event, emit) async {
+      try {
+        await repository.updateBudget(event.budget);
+        add(LoadBudgets());
+      } catch (e) {
+        emit(BudgetFailure(e.toString()));
+      }
+    });
   }
 }

@@ -13,3 +13,8 @@ class DeleteBudget extends BudgetEvent {
   final String id;
   DeleteBudget(this.id);
 }
+
+class UpdateBudget extends BudgetEvent {
+  final BudgetModel budget;
+  UpdateBudget(this.budget);
+}
