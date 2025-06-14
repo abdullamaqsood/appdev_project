@@ -4,6 +4,8 @@ abstract class DebtEvent {}
 
 class LoadDebts extends DebtEvent {}
 
+class LoadDueDebts extends DebtEvent {}
+
 class AddDebt extends DebtEvent {
   final DebtModel debt;
   AddDebt(this.debt);

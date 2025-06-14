@@ -34,5 +34,21 @@ class DebtBloc extends Bloc<DebtEvent, DebtState> {
         emit(DebtFailure(e.toString()));
       }
     });
+
+    on<LoadDueDebts>((event, emit) async {
+      emit(DebtLoading());
+      try {
+        final debts = await repository.fetchDebts();
+        final now = DateTime.now();
+        final dueDebts = debts.where((debt) {
+          final due = debt.dueDate;
+          final daysUntilDue = due.difference(now).inDays;
+          return daysUntilDue <= 1 && due.isAfter(now);
+        }).toList();
+        emit(DueDebtsLoaded(dueDebts));
+      } catch (e) {
+        emit(DebtFailure(e.toString()));
+      }
+    });
   }
 }

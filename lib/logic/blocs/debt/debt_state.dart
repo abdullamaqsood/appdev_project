@@ -11,6 +11,11 @@ class DebtLoaded extends DebtState {
   DebtLoaded(this.debts);
 }
 
+class DueDebtsLoaded extends DebtState {
+  final List<DebtModel> dueDebts;
+  DueDebtsLoaded(this.dueDebts);
+}
+
 class DebtFailure extends DebtState {
   final String message;
   DebtFailure(this.message);
