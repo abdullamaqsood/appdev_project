@@ -53,10 +53,14 @@ class _DebtScreenState extends State<DebtScreen> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const AddDebtScreen()),
-        ),
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const AddDebtScreen()),
+          ).then((_) {
+            context.read<DebtBloc>().add(LoadDebts());
+          });
+        },
         child: const Icon(Icons.add),
       ),
     );
