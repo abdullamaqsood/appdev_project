@@ -110,7 +110,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         MaterialPageRoute(
           builder: (_) => BlocProvider.value(
             value: context.read<ExpenseBloc>(),
-            child: const AddExpenseScreen(),
+            child: AddExpenseScreen(),
           ),
         ),
       );
