@@ -13,6 +13,7 @@ import 'widgets/fab_popup.dart';
 import '../expense/add_expense_screen.dart';
 import '../income/add_income_screen.dart';
 import '../budget/budget_screen.dart';
+import '../reports/reports_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -61,7 +62,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final screens = [
       _buildDashboardContent(),
       BudgetScreen(onTabSelected: (i) => setState(() => _selectedIndex = i)),
-      const Center(child: Text("Reports Screen")), // Placeholder
+      const ReportsScreen(),
       const Center(child: Text("Debt Screen")),
       const Center(child: Text("Profile Screen")),
     ];
