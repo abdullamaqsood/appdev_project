@@ -14,12 +14,15 @@ import 'logic/blocs/income/income_bloc.dart';
 import 'logic/blocs/budget/budget_bloc.dart';
 import 'logic/blocs/debt/debt_bloc.dart';
 import 'presentation/screens/auth/login_screen.dart';
+import 'utils/notification_helper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  await NotificationHelper.init();
+  await NotificationHelper.requestPermissions();
 
   runApp(const MyApp());
 }

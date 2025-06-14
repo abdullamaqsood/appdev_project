@@ -37,18 +37,43 @@ class _BudgetScreenState extends State<BudgetScreen> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            DropdownButtonFormField<String>(
-              value: selectedCategory,
-              items: categories
-                  .map((cat) => DropdownMenuItem(
-                        value: cat,
-                        child: Text(cat),
-                      ))
-                  .toList(),
-              onChanged: (val) {
-                if (val != null) selectedCategory = val;
+            BlocBuilder<BudgetBloc, BudgetState>(
+              builder: (context, state) {
+                if (state is BudgetLoaded) {
+                  // Filter out categories that already have budgets
+                  final availableCategories = categories
+                      .where((cat) => !state.budgets
+                          .any((budget) => budget.category == cat))
+                      .toList();
+
+                  if (availableCategories.isEmpty) {
+                    return const Text(
+                      "All categories already have budgets assigned.",
+                      style: TextStyle(color: Colors.red),
+                    );
+                  }
+
+                  // Update selected category if current one is not available
+                  if (!availableCategories.contains(selectedCategory)) {
+                    selectedCategory = availableCategories.first;
+                  }
+
+                  return DropdownButtonFormField<String>(
+                    value: selectedCategory,
+                    items: availableCategories
+                        .map((cat) => DropdownMenuItem(
+                              value: cat,
+                              child: Text(cat),
+                            ))
+                        .toList(),
+                    onChanged: (val) {
+                      if (val != null) selectedCategory = val;
+                    },
+                    decoration: const InputDecoration(labelText: 'Category'),
+                  );
+                }
+                return const CircularProgressIndicator();
               },
-              decoration: const InputDecoration(labelText: 'Category'),
             ),
             const SizedBox(height: 12),
             TextField(
@@ -63,18 +88,32 @@ class _BudgetScreenState extends State<BudgetScreen> {
             onPressed: () => Navigator.pop(context),
             child: const Text("Cancel"),
           ),
-          ElevatedButton(
-            onPressed: () {
-              final budget = BudgetModel(
-                id: const Uuid().v4(),
-                category: selectedCategory,
-                limit: double.tryParse(limitController.text) ?? 0,
-                createdAt: DateTime.now(),
-              );
-              context.read<BudgetBloc>().add(AddBudget(budget));
-              Navigator.pop(context);
+          BlocBuilder<BudgetBloc, BudgetState>(
+            builder: (context, state) {
+              if (state is BudgetLoaded) {
+                final availableCategories = categories
+                    .where((cat) =>
+                        !state.budgets.any((budget) => budget.category == cat))
+                    .toList();
+
+                return ElevatedButton(
+                  onPressed: availableCategories.isEmpty
+                      ? null
+                      : () {
+                          final budget = BudgetModel(
+                            id: const Uuid().v4(),
+                            category: selectedCategory,
+                            limit: double.tryParse(limitController.text) ?? 0,
+                            createdAt: DateTime.now(),
+                          );
+                          context.read<BudgetBloc>().add(AddBudget(budget));
+                          Navigator.pop(context);
+                        },
+                  child: const Text("Add"),
+                );
+              }
+              return const SizedBox();
             },
-            child: const Text("Add"),
           ),
         ],
       ),

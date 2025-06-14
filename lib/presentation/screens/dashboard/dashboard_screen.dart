@@ -13,6 +13,7 @@ import '../../../logic/blocs/expense/expense_bloc.dart';
 import '../../../logic/blocs/income/income_bloc.dart';
 import '../../../data/repositories/expense_repository.dart';
 import '../../../data/repositories/income_repository.dart';
+import '../../../utils/notification_helper.dart';
 import '../dashboard/widgets/transaction_tile.dart';
 import '../dashboard/widgets/bottom_nav_bar.dart';
 import 'widgets/fab_popup.dart';
@@ -21,6 +22,8 @@ import '../income/add_income_screen.dart';
 import '../budget/budget_screen.dart';
 import '../reports/reports_screen.dart';
 import '../debt/debt_screen.dart';
+import '../notifications/notifications_screen.dart';
+import '../../../data/repositories/debt_repository.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -30,12 +33,41 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
+  Future<void> scheduleDueDebtNotifications() async {
+    await NotificationHelper().scheduleDueDebtNotifications();
+  }
+
   int _selectedIndex = 0;
 
   @override
   void initState() {
     super.initState();
     context.read<DashboardBloc>().add(LoadUserExpenses());
+    _checkDueDebts();
+  }
+
+  Future<void> _checkDueDebts() async {
+    final debts = await DebtRepository().fetchDebts();
+    final now = DateTime.now();
+    bool hasDueDebts = false;
+
+    for (final debt in debts) {
+      final due = debt.dueDate;
+      final daysUntilDue = due.difference(now).inDays;
+
+      if (daysUntilDue <= 1 && due.isAfter(now)) {
+        hasDueDebts = true;
+        break;
+      }
+    }
+
+    if (hasDueDebts && mounted) {
+      await NotificationHelper.showNotification(
+        id: 0,
+        title: 'Due Payments',
+        body: 'You have loans/debts due soon. Check notifications for details.',
+      );
+    }
   }
 
   void _openAddPopup() async {
@@ -298,7 +330,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                 ],
               ),
-              const Icon(Icons.notifications_outlined, size: 28),
+              IconButton(
+                icon: const Icon(Icons.notifications_outlined, size: 28),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const NotificationsScreen(),
+                    ),
+                  );
+                },
+              ),
             ],
           ),
           const SizedBox(height: 24),
