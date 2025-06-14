@@ -7,13 +7,13 @@ import 'data/repositories/expense_repository.dart';
 import 'data/repositories/income_repository.dart';
 import 'data/repositories/budget_repository.dart';
 import 'data/repositories/debt_repository.dart';
-import 'logic/blocs/auth/auth_bloc.dart';
-import 'logic/blocs/expense/expense_bloc.dart';
-import 'logic/blocs/dashboard/dashboard_bloc.dart';
-import 'logic/blocs/income/income_bloc.dart';
-import 'logic/blocs/budget/budget_bloc.dart';
-import 'logic/blocs/debt/debt_bloc.dart';
-import 'presentation/screens/auth/login_screen.dart';
+import 'blocs/auth/auth_bloc.dart';
+import 'blocs/expense/expense_bloc.dart';
+import 'blocs/dashboard/dashboard_bloc.dart';
+import 'blocs/income/income_bloc.dart';
+import 'blocs/budget/budget_bloc.dart';
+import 'blocs/debt/debt_bloc.dart';
+import 'screens/auth/login_screen.dart';
 import 'utils/notification_helper.dart';
 
 void main() async {
