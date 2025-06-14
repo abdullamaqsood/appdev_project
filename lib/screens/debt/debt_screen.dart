@@ -90,11 +90,28 @@ class _DebtScreenState extends State<DebtScreen> {
         subtitle: Text(
             "Due: ${debt.dueDate.toLocal().toString().split(' ')[0]}\nNote: ${debt.note}"),
         isThreeLine: true,
-        trailing: IconButton(
-          icon: const Icon(Icons.delete, color: Colors.red),
-          onPressed: () {
-            context.read<DebtBloc>().add(DeleteDebt(debt.id));
-          },
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.edit, color: Colors.blue),
+              onPressed: () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => AddDebtScreen(debt: debt),
+                  ),
+                );
+                context.read<DebtBloc>().add(LoadDebts());
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.delete, color: Colors.red),
+              onPressed: () {
+                context.read<DebtBloc>().add(DeleteDebt(debt.id));
+              },
+            ),
+          ],
         ),
       ),
     );

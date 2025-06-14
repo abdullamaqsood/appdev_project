@@ -4,21 +4,66 @@ import '../../blocs/debt_form/debt_form_bloc.dart';
 import '../../blocs/debt_form/debt_form_event.dart';
 import '../../blocs/debt_form/debt_form_state.dart';
 import '../../data/repositories/debt_repository.dart';
+import '../../data/models/debt_model.dart';
 
 class AddDebtScreen extends StatelessWidget {
-  const AddDebtScreen({super.key});
+  final DebtModel? debt;
+  const AddDebtScreen({super.key, this.debt});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => DebtFormBloc(debtRepository: DebtRepository()),
-      child: const _AddDebtForm(),
+      child: _AddDebtForm(debt: debt),
     );
   }
 }
 
-class _AddDebtForm extends StatelessWidget {
-  const _AddDebtForm({Key? key}) : super(key: key);
+class _AddDebtForm extends StatefulWidget {
+  final DebtModel? debt;
+  const _AddDebtForm({Key? key, this.debt}) : super(key: key);
+
+  @override
+  State<_AddDebtForm> createState() => _AddDebtFormState();
+}
+
+class _AddDebtFormState extends State<_AddDebtForm> {
+  late final TextEditingController _personController;
+  late final TextEditingController _amountController;
+  late final TextEditingController _noteController;
+  bool _initialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _personController = TextEditingController();
+    _amountController = TextEditingController();
+    _noteController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _personController.dispose();
+    _amountController.dispose();
+    _noteController.dispose();
+    super.dispose();
+  }
+
+  void _initializeFields(DebtFormState state) {
+    if (!_initialized && widget.debt != null) {
+      _personController.text = widget.debt!.person;
+      _amountController.text = widget.debt!.amount.toString();
+      _noteController.text = widget.debt!.note;
+      final bloc = context.read<DebtFormBloc>();
+      bloc.add(DebtPersonChanged(widget.debt!.person));
+      bloc.add(DebtAmountChanged(widget.debt!.amount.toString()));
+      bloc.add(DebtNoteChanged(widget.debt!.note));
+      bloc.add(DebtGivenDateChanged(widget.debt!.givenDate));
+      bloc.add(DebtDueDateChanged(widget.debt!.dueDate));
+      bloc.add(DebtIsLoanChanged(widget.debt!.isLoan));
+      _initialized = true;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,8 +79,11 @@ class _AddDebtForm extends StatelessWidget {
       },
       child: BlocBuilder<DebtFormBloc, DebtFormState>(
         builder: (context, state) {
+          _initializeFields(state);
           return Scaffold(
-            appBar: AppBar(title: const Text("Add Debt/Loan")),
+            appBar: AppBar(
+                title: Text(
+                    widget.debt == null ? "Add Debt/Loan" : "Edit Debt/Loan")),
             body: Padding(
               padding: const EdgeInsets.all(20),
               child: ListView(
@@ -49,6 +97,7 @@ class _AddDebtForm extends StatelessWidget {
                         state.isLoan ? "Loan (You gave)" : "Debt (You owe)"),
                   ),
                   TextField(
+                    controller: _personController,
                     onChanged: (val) => context
                         .read<DebtFormBloc>()
                         .add(DebtPersonChanged(val)),
@@ -56,6 +105,7 @@ class _AddDebtForm extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   TextField(
+                    controller: _amountController,
                     keyboardType: TextInputType.number,
                     onChanged: (val) => context
                         .read<DebtFormBloc>()
@@ -64,6 +114,7 @@ class _AddDebtForm extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   TextField(
+                    controller: _noteController,
                     onChanged: (val) =>
                         context.read<DebtFormBloc>().add(DebtNoteChanged(val)),
                     decoration: const InputDecoration(labelText: "Note"),
@@ -110,12 +161,27 @@ class _AddDebtForm extends StatelessWidget {
                   ElevatedButton(
                     onPressed: state.isSubmitting
                         ? null
-                        : () => context
-                            .read<DebtFormBloc>()
-                            .add(const DebtFormSubmitted()),
+                        : () async {
+                            final bloc = context.read<DebtFormBloc>();
+                            if (widget.debt == null) {
+                              bloc.add(const DebtFormSubmitted());
+                            } else {
+                              final updatedDebt = DebtModel(
+                                id: widget.debt!.id,
+                                person: state.person,
+                                amount: double.tryParse(state.amount) ?? 0,
+                                givenDate: state.givenDate,
+                                dueDate: state.dueDate,
+                                note: state.note,
+                                isLoan: state.isLoan,
+                              );
+                              await DebtRepository().updateDebt(updatedDebt);
+                              Navigator.pop(context);
+                            }
+                          },
                     child: state.isSubmitting
                         ? const CircularProgressIndicator()
-                        : const Text("Save"),
+                        : Text(widget.debt == null ? "Save" : "Update"),
                   ),
                 ],
               ),
