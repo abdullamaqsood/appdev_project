@@ -39,8 +39,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     await NotificationHelper().scheduleDueDebtNotifications();
   }
 
-  int _selectedIndex = 0;
-
   @override
   void initState() {
     super.initState();
@@ -301,42 +299,49 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final screens = [
-      _buildDashboardContent(),
-      BudgetScreen(onTabSelected: (i) => setState(() => _selectedIndex = i)),
-      const ReportsScreen(),
-      const DebtScreen(),
-      const Center(child: Text("Profile Screen")),
-    ];
+    return BlocBuilder<DashboardBloc, DashboardState>(
+      builder: (context, state) {
+        final selectedIndex = state.selectedIndex;
+        final screens = [
+          _buildDashboardContent(),
+          BudgetScreen(
+              onTabSelected: (i) =>
+                  context.read<DashboardBloc>().add(DashboardTabChanged(i))),
+          const ReportsScreen(),
+          const DebtScreen(),
+          const Center(child: Text("Profile Screen")),
+        ];
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFE7F0FD),
-      body: SafeArea(
-        child: Stack(
-          children: [
-            screens[_selectedIndex],
-            if (_selectedIndex == 0)
-              Positioned(
-                bottom: 20,
-                right: 20,
-                child: FloatingActionButton(
-                  backgroundColor: Colors.blue,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+        return Scaffold(
+          backgroundColor: const Color(0xFFE7F0FD),
+          body: SafeArea(
+            child: Stack(
+              children: [
+                screens[selectedIndex],
+                if (selectedIndex == 0)
+                  Positioned(
+                    bottom: 20,
+                    right: 20,
+                    child: FloatingActionButton(
+                      backgroundColor: Colors.blue,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: const Icon(Icons.add, size: 28),
+                      onPressed: _openAddPopup,
+                    ),
                   ),
-                  child: const Icon(Icons.add, size: 28),
-                  onPressed: _openAddPopup,
-                ),
-              ),
-          ],
-        ),
-      ),
-      bottomNavigationBar: CustomBottomNavBar(
-        currentIndex: _selectedIndex,
-        onTabSelected: (index) {
-          setState(() => _selectedIndex = index);
-        },
-      ),
+              ],
+            ),
+          ),
+          bottomNavigationBar: CustomBottomNavBar(
+            currentIndex: selectedIndex,
+            onTabSelected: (index) {
+              context.read<DashboardBloc>().add(DashboardTabChanged(index));
+            },
+          ),
+        );
+      },
     );
   }
 
