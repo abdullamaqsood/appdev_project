@@ -5,10 +5,12 @@ import 'firebase_options.dart';
 import 'data/repositories/auth_repository.dart';
 import 'data/repositories/expense_repository.dart';
 import 'data/repositories/income_repository.dart';
+import 'data/repositories/budget_repository.dart';
 import 'logic/blocs/auth/auth_bloc.dart';
 import 'logic/blocs/expense/expense_bloc.dart';
 import 'logic/blocs/dashboard/dashboard_bloc.dart';
 import 'logic/blocs/income/income_bloc.dart';
+import 'logic/blocs/budget/budget_bloc.dart';
 import 'presentation/screens/auth/login_screen.dart';
 
 void main() async {
@@ -36,6 +38,7 @@ class MyApp extends StatelessWidget {
             create: (_) =>
                 DashboardBloc(expenseRepository, IncomeRepository())),
         BlocProvider(create: (_) => IncomeBloc(IncomeRepository())),
+        BlocProvider(create: (_) => BudgetBloc(BudgetRepository())),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
