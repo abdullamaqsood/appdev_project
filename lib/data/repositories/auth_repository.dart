@@ -19,13 +19,7 @@ class AuthRepository {
     );
     final user = credential.user;
 
-    // Add Firestore user record manually
-    if (user != null) {
-      await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
-        'email': email,
-        'role': 'normal',
-      });
-    }
+    // Removed Firestore user record creation from here
 
     return user;
   }
@@ -35,7 +29,15 @@ class AuthRepository {
       email: email,
       password: password,
     );
-    return credential.user;
+    final user = credential.user;
+    // Add Firestore user record manually after signup
+    if (user != null) {
+      await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+        'email': email,
+        'role': 'normal',
+      });
+    }
+    return user;
   }
 
   Future<User?> logInWithGoogle() async {
@@ -47,7 +49,19 @@ class AuthRepository {
       idToken: googleAuth.idToken,
     );
     final userCred = await _firebaseAuth.signInWithCredential(credential);
-    return userCred.user;
+    final user = userCred.user;
+    if (user != null) {
+      final userDoc =
+          FirebaseFirestore.instance.collection('users').doc(user.uid);
+      final docSnapshot = await userDoc.get();
+      if (!docSnapshot.exists) {
+        await userDoc.set({
+          'email': user.email,
+          'role': 'normal',
+        });
+      }
+    }
+    return user;
   }
 
   Future<void> logOut() async {
@@ -56,4 +70,36 @@ class AuthRepository {
   }
 
   Stream<User?> get user => _firebaseAuth.authStateChanges();
+
+  /// Fetch all users (for admin)
+  Future<List<Map<String, dynamic>>> fetchAllUsers() async {
+    final snapshot = await FirebaseFirestore.instance.collection('users').get();
+    return snapshot.docs.map((doc) {
+      final data = doc.data();
+      data['uid'] = doc.id;
+      return data;
+    }).toList();
+  }
+
+  /// Delete a user and all their details (for admin)
+  Future<void> deleteUserAndDetails(String uid) async {
+    final userRef = FirebaseFirestore.instance.collection('users').doc(uid);
+    final expenses = await userRef.collection('expenses').get();
+    for (final doc in expenses.docs) {
+      await doc.reference.delete();
+    }
+    final incomes = await userRef.collection('income').get();
+    for (final doc in incomes.docs) {
+      await doc.reference.delete();
+    }
+    final budgets = await userRef.collection('budgets').get();
+    for (final doc in budgets.docs) {
+      await doc.reference.delete();
+    }
+    final debts = await userRef.collection('debts').get();
+    for (final doc in debts.docs) {
+      await doc.reference.delete();
+    }
+    await userRef.delete();
+  }
 }

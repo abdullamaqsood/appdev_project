@@ -5,6 +5,9 @@ import '../../blocs/auth/auth_event.dart';
 import '../../blocs/auth/auth_state.dart';
 import 'signup_screen.dart';
 import '../dashboard/dashboard_screen.dart';
+import '../admin/user_management_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class LoginScreen extends StatelessWidget {
   final TextEditingController emailController = TextEditingController();
@@ -26,17 +29,33 @@ class LoginScreen extends StatelessWidget {
             boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 10)],
           ),
           child: BlocConsumer<AuthBloc, AuthState>(
-            listener: (context, state) {
+            listener: (context, state) async {
               if (state is AuthFailure) {
                 ScaffoldMessenger.of(context)
                     .showSnackBar(SnackBar(content: Text(state.message)));
               } else if (state is AuthSuccess) {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                      builder: (_) =>
-                          const DashboardScreen(initialTabIndex: 0)),
-                );
+                final user = FirebaseAuth.instance.currentUser;
+                if (user != null) {
+                  final doc = await FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(user.uid)
+                      .get();
+                  final role = doc.data()?['role'] ?? 'normal';
+                  if (role == 'admin') {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const UserManagementScreen()),
+                    );
+                  } else {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) =>
+                              const DashboardScreen(initialTabIndex: 0)),
+                    );
+                  }
+                }
               }
             },
             builder: (context, state) {

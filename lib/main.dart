@@ -15,6 +15,9 @@ import 'blocs/budget/budget_bloc.dart';
 import 'blocs/debt/debt_bloc.dart';
 import 'screens/auth/login_screen.dart';
 import 'utils/notification_helper.dart';
+import 'screens/admin/user_management_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -53,8 +56,54 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.blue,
           scaffoldBackgroundColor: const Color(0xFFEFF3F9),
         ),
-        home: LoginScreen(),
+        home: _RoleBasedHome(),
       ),
     );
+  }
+}
+
+class _RoleBasedHome extends StatefulWidget {
+  @override
+  State<_RoleBasedHome> createState() => _RoleBasedHomeState();
+}
+
+class _RoleBasedHomeState extends State<_RoleBasedHome> {
+  bool _loading = true;
+  bool _isAdmin = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkRole();
+  }
+
+  Future<void> _checkRole() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+      final role = doc.data()?['role'] ?? 'normal';
+      setState(() {
+        _isAdmin = role == 'admin';
+        _loading = false;
+      });
+    } else {
+      setState(() {
+        _loading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_loading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+    if (_isAdmin) {
+      return const UserManagementScreen();
+    }
+    return LoginScreen();
   }
 }
