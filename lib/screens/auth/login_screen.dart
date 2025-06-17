@@ -29,68 +29,79 @@ class LoginScreen extends StatelessWidget {
             boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 10)],
           ),
           child: BlocConsumer<AuthBloc, AuthState>(
-            listener: (context, state) async {
-              if (state is AuthFailure) {
-                ScaffoldMessenger.of(context)
-                    .showSnackBar(SnackBar(content: Text(state.message)));
-              } else if (state is AuthSuccess) {
-                final user = FirebaseAuth.instance.currentUser;
-                if (user != null) {
-                  final doc = await FirebaseFirestore.instance
-                      .collection('users')
-                      .doc(user.uid)
-                      .get();
-                  final role = doc.data()?['role'] ?? 'normal';
-                  if (role == 'admin') {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => const UserManagementScreen()),
-                    );
-                  } else {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) =>
-                              const DashboardScreen(initialTabIndex: 0)),
-                    );
-                  }
+              listener: (context, state) async {
+            if (state is AuthFailure) {
+              ScaffoldMessenger.of(context)
+                  .showSnackBar(SnackBar(content: Text(state.message)));
+            } else if (state is AuthSuccess) {
+              final user = FirebaseAuth.instance.currentUser;
+              if (user != null) {
+                final doc = await FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(user.uid)
+                    .get();
+                final role = doc.data()?['role'] ?? 'normal';
+                if (role == 'admin') {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const UserManagementScreen()),
+                  );
+                } else {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) =>
+                            const DashboardScreen(initialTabIndex: 0)),
+                  );
                 }
               }
-            },
-            builder: (context, state) {
-              return Column(
+            }
+          }, builder: (context, state) {
+            return SingleChildScrollView(
+              child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Icon(Icons.account_balance_wallet_rounded,
-                      size: 40, color: Colors.blue),
+                      size: 48, color: Colors.blue),
                   const SizedBox(height: 16),
-                  const Text("Welcome Back!",
-                      style:
-                          TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-                  const Text("Log in to manage your expenses"),
-                  const SizedBox(height: 20),
+                  const Text(
+                    "Welcome Back!",
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    "Log in to manage your expenses",
+                    style: TextStyle(color: Colors.black54),
+                  ),
+                  const SizedBox(height: 24),
                   TextField(
                     controller: emailController,
-                    decoration: const InputDecoration(
-                      hintText: "your@email.com",
-                      labelText: "Email",
-                      prefixIcon: Icon(Icons.email_outlined),
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      hintText: "Email",
+                      prefixIcon: const Icon(Icons.email_outlined),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey[100],
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 16),
                   TextField(
                     controller: passwordController,
                     obscureText: true,
-                    decoration: const InputDecoration(
-                      hintText: "••••••••",
-                      labelText: "Password",
-                      prefixIcon: Icon(Icons.lock_outline),
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      hintText: "Password",
+                      prefixIcon: const Icon(Icons.lock_outline),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey[100],
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: state is AuthLoading
                         ? null
@@ -103,14 +114,19 @@ class LoginScreen extends StatelessWidget {
                                 );
                           },
                     style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 50),
                       backgroundColor: Colors.blue,
+                      minimumSize: const Size(double.infinity, 50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                     child: state is AuthLoading
                         ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text("Login"),
+                        : const Text("Login",
+                            style:
+                                TextStyle(fontSize: 16, color: Colors.white)),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -122,32 +138,53 @@ class LoginScreen extends StatelessWidget {
                             MaterialPageRoute(builder: (_) => SignupScreen()),
                           );
                         },
-                        child: const Text("Sign up",
-                            style: TextStyle(color: Colors.blue)),
+                        child: const Text(
+                          "Sign up",
+                          style: TextStyle(
+                              color: Colors.blue, fontWeight: FontWeight.bold),
+                        ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
-                  const Text("Or continue with"),
+                  const SizedBox(height: 24),
+                  const Text("Or sign in with",
+                      style: TextStyle(color: Colors.black54)),
                   const SizedBox(height: 12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      IconButton(
-                          icon: const Icon(Icons.g_mobiledata, size: 40),
-                          onPressed: () {
-                            context
-                                .read<AuthBloc>()
-                                .add(AuthGoogleLoginRequested());
-                          }),
-                      const Icon(Icons.apple, size: 32),
-                      const Icon(Icons.facebook, size: 32),
-                    ],
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        context
+                            .read<AuthBloc>()
+                            .add(AuthGoogleLoginRequested());
+                      },
+                      icon: Image.asset(
+                        'assets/google_logo.png', // Ensure this file exists in assets and is listed in pubspec.yaml
+                        height: 24,
+                        width: 24,
+                      ),
+                      label: const Text(
+                        'Sign in with Google',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        side: const BorderSide(color: Colors.black12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        backgroundColor: Colors.white,
+                      ),
+                    ),
                   ),
                 ],
-              );
-            },
-          ),
+              ),
+            );
+          }),
         ),
       ),
     );
