@@ -37,7 +37,7 @@ dependencies:
   firebase_core: ^3.13.0
   firebase_auth: ^5.5.3
   google_sign_in: ^6.3.0
-  shared_preferences: ^2.5.3
+  # shared_preferences: ^2.5.3
   flutter_bloc: ^9.1.1
   equatable: ^2.0.7
   cloud_firestore: ^5.6.7
@@ -45,12 +45,13 @@ dependencies:
   uuid: ^4.5.1
   fl_chart: ^0.71.0
   csv: ^5.0.1
-  path_provider: ^2.0.14
+  # path_provider: ^2.0.14
   permission_handler: ^11.0.0
   pdf: ^3.10.4
-  printing: ^5.11.1
+  # printing: ^5.11.1
   flutter_local_notifications: ^17.0.0
   timezone: ^0.9.2
+
 
 
 
@@ -64,6 +65,10 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
+  golden_toolkit: ^0.15.0
+  mockito: ^5.4.2
+  bloc_test: ^10.0.0
+  mocktail: ^1.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
