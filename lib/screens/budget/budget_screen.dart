@@ -200,16 +200,9 @@ class _BudgetScreenState extends State<BudgetScreen> {
             child: ListView(
               children: [
                 const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: const [
-                    Text(
-                      "Budgets",
-                      style:
-                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                    ),
-                    Icon(Icons.notifications_outlined, size: 28),
-                  ],
+                const Text(
+                  "Budgets",
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 24),
                 BlocBuilder<BudgetBloc, BudgetState>(
@@ -226,23 +219,28 @@ class _BudgetScreenState extends State<BudgetScreen> {
                           return Card(
                             margin: const EdgeInsets.only(bottom: 12),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(16),
                             ),
-                            elevation: 3,
-                            color: Colors.white,
+                            elevation: 4,
                             child: ListTile(
-                              leading: const Icon(Icons.wallet),
-                              title: Text(budget.category),
-                              subtitle: Text("Limit: \$${budget.limit}"),
+                              leading: const Icon(Icons.wallet, size: 28),
+                              title: Text(
+                                budget.category,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w600),
+                              ),
+                              subtitle: Text(
+                                "Limit: \$${budget.limit}",
+                                style: const TextStyle(color: Colors.black54),
+                              ),
                               trailing: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   IconButton(
                                     icon: const Icon(Icons.edit,
                                         color: Colors.blue),
-                                    onPressed: () {
-                                      _showEditBudgetDialog(budget);
-                                    },
+                                    onPressed: () =>
+                                        _showEditBudgetDialog(budget),
                                   ),
                                   IconButton(
                                     icon: const Icon(Icons.delete,

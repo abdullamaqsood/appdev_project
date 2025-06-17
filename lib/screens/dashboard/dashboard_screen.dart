@@ -358,12 +358,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Row(
                 children: const [
                   CircleAvatar(
-                    backgroundImage: NetworkImage("https://i.pravatar.cc/100"),
+                    backgroundImage: NetworkImage(
+                        "https://t3.ftcdn.net/jpg/02/99/04/20/360_F_299042079_vGBD7wIlSeNl7vOevWHiL93G4koMM967.jpg"),
                     radius: 24,
                   ),
                   SizedBox(width: 10),
                   Text(
-                    "Hey, Jacob!",
+                    "Hey, Abdullah!",
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                 ],
