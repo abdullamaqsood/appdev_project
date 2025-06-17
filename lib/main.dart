@@ -16,8 +16,7 @@ import 'blocs/debt/debt_bloc.dart';
 import 'screens/auth/login_screen.dart';
 import 'utils/notification_helper.dart';
 import 'screens/admin/user_management_screen.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'blocs/role_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -48,6 +47,7 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (_) => IncomeBloc(IncomeRepository())),
         BlocProvider(create: (_) => BudgetBloc(BudgetRepository())),
         BlocProvider(create: (_) => DebtBloc(DebtRepository())),
+        BlocProvider(create: (_) => RoleBloc(authRepository)),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -68,42 +68,29 @@ class _RoleBasedHome extends StatefulWidget {
 }
 
 class _RoleBasedHomeState extends State<_RoleBasedHome> {
-  bool _loading = true;
-  bool _isAdmin = false;
-
   @override
   void initState() {
     super.initState();
-    _checkRole();
-  }
-
-  Future<void> _checkRole() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      final doc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .get();
-      final role = doc.data()?['role'] ?? 'normal';
-      setState(() {
-        _isAdmin = role == 'admin';
-        _loading = false;
-      });
-    } else {
-      setState(() {
-        _loading = false;
-      });
-    }
+    context.read<RoleBloc>().add(CheckRole());
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-    if (_isAdmin) {
-      return const UserManagementScreen();
-    }
-    return LoginScreen();
+    return BlocBuilder<RoleBloc, RoleState>(
+      builder: (context, state) {
+        if (state is RoleLoading) {
+          return const Scaffold(
+              body: Center(child: CircularProgressIndicator()));
+        } else if (state is RoleAdmin) {
+          return const UserManagementScreen();
+        } else if (state is RoleNormal) {
+          return LoginScreen();
+        } else if (state is RoleError) {
+          return Scaffold(
+              body: Center(child: Text('Error: \\${state.message}')));
+        }
+        return const SizedBox.shrink();
+      },
+    );
   }
 }
