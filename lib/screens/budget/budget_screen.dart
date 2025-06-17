@@ -33,6 +33,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
+        backgroundColor: Colors.white,
         title: const Text("Add Budget"),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -128,64 +129,52 @@ class _BudgetScreenState extends State<BudgetScreen> {
 
     showDialog(
       context: context,
-      builder: (_) => BlocBuilder<BudgetBloc, BudgetState>(
-        builder: (context, state) {
-          List<String> availableCategories = categories;
-          if (state is BudgetLoaded) {
-            availableCategories = categories
-                .where((cat) =>
-                    cat == budget.category ||
-                    !state.budgets
-                        .any((b) => b.category == cat && b.id != budget.id))
-                .toList();
-          }
-          return AlertDialog(
-            title: const Text("Edit Budget"),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                DropdownButtonFormField<String>(
-                  value: selectedCategory,
-                  items: availableCategories
-                      .map((cat) => DropdownMenuItem(
-                            value: cat,
-                            child: Text(cat),
-                          ))
-                      .toList(),
-                  onChanged: (val) {
-                    if (val != null) selectedCategory = val;
-                  },
-                  decoration: const InputDecoration(labelText: 'Category'),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: limitController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: 'Limit'),
-                ),
-              ],
+      builder: (_) => AlertDialog(
+        backgroundColor: Colors.white,
+        title: const Text("Edit Budget"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            DropdownButtonFormField<String>(
+              value: selectedCategory,
+              items: categories
+                  .map((cat) => DropdownMenuItem(
+                        value: cat,
+                        child: Text(cat),
+                      ))
+                  .toList(),
+              onChanged: (val) {
+                if (val != null) selectedCategory = val;
+              },
+              decoration: const InputDecoration(labelText: 'Category'),
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text("Cancel"),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  final updatedBudget = BudgetModel(
-                    id: budget.id,
-                    category: selectedCategory,
-                    limit: double.tryParse(limitController.text) ?? 0,
-                    createdAt: budget.createdAt,
-                  );
-                  context.read<BudgetBloc>().add(UpdateBudget(updatedBudget));
-                  Navigator.pop(context);
-                },
-                child: const Text("Save"),
-              ),
-            ],
-          );
-        },
+            const SizedBox(height: 12),
+            TextField(
+              controller: limitController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(labelText: 'Limit'),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final updatedBudget = BudgetModel(
+                id: budget.id,
+                category: selectedCategory,
+                limit: double.tryParse(limitController.text) ?? 0,
+                createdAt: budget.createdAt,
+              );
+              context.read<BudgetBloc>().add(UpdateBudget(updatedBudget));
+              Navigator.pop(context);
+            },
+            child: const Text("Save"),
+          ),
+        ],
       ),
     );
   }
