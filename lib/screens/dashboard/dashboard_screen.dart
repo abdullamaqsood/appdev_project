@@ -314,7 +314,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ];
 
         return Scaffold(
-          backgroundColor: const Color(0xFFE7F0FD),
+          backgroundColor: const Color(0xFFEFF3F9),
           body: SafeArea(
             child: Stack(
               children: [

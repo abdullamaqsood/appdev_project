@@ -192,97 +192,100 @@ class _BudgetScreenState extends State<BudgetScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Stack(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: ListView(
-              children: [
-                const SizedBox(height: 16),
-                const Text(
-                  "Budgets",
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 24),
-                BlocBuilder<BudgetBloc, BudgetState>(
-                  builder: (context, state) {
-                    if (state is BudgetLoading) {
-                      return const Center(child: CircularProgressIndicator());
-                    } else if (state is BudgetLoaded) {
-                      if (state.budgets.isEmpty) {
-                        return const Text("No budgets added yet.");
+    return Scaffold(
+      backgroundColor: const Color(0xFFEFF3F9),
+      body: SafeArea(
+        child: Stack(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: ListView(
+                children: [
+                  const SizedBox(height: 16),
+                  const Text(
+                    "Budgets",
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 24),
+                  BlocBuilder<BudgetBloc, BudgetState>(
+                    builder: (context, state) {
+                      if (state is BudgetLoading) {
+                        return const Center(child: CircularProgressIndicator());
+                      } else if (state is BudgetLoaded) {
+                        if (state.budgets.isEmpty) {
+                          return const Text("No budgets added yet.");
+                        }
+
+                        return Column(
+                          children: state.budgets.map((budget) {
+                            return Card(
+                              margin: const EdgeInsets.only(bottom: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              elevation: 4,
+                              child: ListTile(
+                                leading: const Icon(Icons.wallet, size: 28),
+                                title: Text(
+                                  budget.category,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w600),
+                                ),
+                                subtitle: Text(
+                                  "Limit: \$${budget.limit}",
+                                  style: const TextStyle(color: Colors.black54),
+                                ),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.edit,
+                                          color: Colors.blue),
+                                      onPressed: () =>
+                                          _showEditBudgetDialog(budget),
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.delete,
+                                          color: Colors.red),
+                                      onPressed: () {
+                                        context
+                                            .read<BudgetBloc>()
+                                            .add(DeleteBudget(budget.id));
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        );
+                      } else if (state is BudgetFailure) {
+                        return Text("Error: ${state.message}");
+                      } else {
+                        return const SizedBox();
                       }
-
-                      return Column(
-                        children: state.budgets.map((budget) {
-                          return Card(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            elevation: 4,
-                            child: ListTile(
-                              leading: const Icon(Icons.wallet, size: 28),
-                              title: Text(
-                                budget.category,
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.w600),
-                              ),
-                              subtitle: Text(
-                                "Limit: \$${budget.limit}",
-                                style: const TextStyle(color: Colors.black54),
-                              ),
-                              trailing: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  IconButton(
-                                    icon: const Icon(Icons.edit,
-                                        color: Colors.blue),
-                                    onPressed: () =>
-                                        _showEditBudgetDialog(budget),
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.delete,
-                                        color: Colors.red),
-                                    onPressed: () {
-                                      context
-                                          .read<BudgetBloc>()
-                                          .add(DeleteBudget(budget.id));
-                                    },
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                      );
-                    } else if (state is BudgetFailure) {
-                      return Text("Error: ${state.message}");
-                    } else {
-                      return const SizedBox();
-                    }
-                  },
-                ),
-                const SizedBox(height: 80),
-              ],
-            ),
-          ),
-
-          // FAB
-          Positioned(
-            bottom: 20,
-            right: 20,
-            child: FloatingActionButton(
-              backgroundColor: Colors.blue,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+                    },
+                  ),
+                  const SizedBox(height: 80),
+                ],
               ),
-              child: const Icon(Icons.add, size: 28),
-              onPressed: _showAddBudgetDialog,
             ),
-          ),
-        ],
+
+            // FAB
+            Positioned(
+              bottom: 20,
+              right: 20,
+              child: FloatingActionButton(
+                backgroundColor: Colors.blue,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: const Icon(Icons.add, size: 28),
+                onPressed: _showAddBudgetDialog,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

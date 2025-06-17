@@ -100,6 +100,7 @@ class _AddIncomeFormState extends State<_AddIncomeForm> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(widget.isEdit ? "Edit Income" : "Add Income")),
+      backgroundColor: const Color(0xFFEFF3F9),
       body: BlocConsumer<IncomeFormBloc, IncomeFormState>(
         listener: (context, state) {
           if (state.isSuccess) {

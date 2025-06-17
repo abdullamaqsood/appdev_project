@@ -53,6 +53,7 @@ class UserManagementScreen extends StatelessWidget {
             ),
           ],
         ),
+        backgroundColor: const Color(0xFFEFF3F9),
         body: BlocConsumer<UserManagementBloc, UserManagementState>(
           listener: (context, state) {
             if (state is UserDeleted) {

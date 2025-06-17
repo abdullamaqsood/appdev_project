@@ -23,6 +23,7 @@ class _DebtScreenState extends State<DebtScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Debt & Loan Tracker")),
+      backgroundColor: const Color(0xFFEFF3F9),
       body: BlocBuilder<DebtBloc, DebtState>(
         builder: (context, state) {
           if (state is DebtLoading) {

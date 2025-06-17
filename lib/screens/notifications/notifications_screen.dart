@@ -13,7 +13,7 @@ class NotificationsScreen extends StatelessWidget {
     return BlocProvider(
       create: (_) => DebtBloc(DebtRepository())..add(LoadDueDebts()),
       child: Scaffold(
-        backgroundColor: const Color(0xFFE7F0FD),
+        backgroundColor: const Color(0xFFEFF3F9),
         appBar: AppBar(
           title: const Text('Notifications'),
           backgroundColor: Colors.transparent,
