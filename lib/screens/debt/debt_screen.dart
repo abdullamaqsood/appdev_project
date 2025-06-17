@@ -22,52 +22,69 @@ class _DebtScreenState extends State<DebtScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Debt & Loan Tracker")),
       backgroundColor: const Color(0xFFEFF3F9),
-      body: BlocBuilder<DebtBloc, DebtState>(
-        builder: (context, state) {
-          if (state is DebtLoading) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (state is DebtLoaded) {
-            final loans = state.debts.where((d) => d.isLoan).toList();
-            final debts = state.debts.where((d) => !d.isLoan).toList();
+      body: SafeArea(
+        child: BlocBuilder<DebtBloc, DebtState>(
+          builder: (context, state) {
+            if (state is DebtLoading) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (state is DebtLoaded) {
+              final loans = state.debts.where((d) => d.isLoan).toList();
+              final debts = state.debts.where((d) => !d.isLoan).toList();
 
-            return ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                const Text("Loans Given",
-                    style:
-                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                if (loans.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 8),
-                    child:
-                        Text("No loans", style: TextStyle(color: Colors.grey)),
-                  )
-                else
-                  ...loans.map((d) => _buildTile(d, true)),
-                const SizedBox(height: 24),
-                const Text("Debts Taken",
-                    style:
-                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                if (debts.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 8),
-                    child:
-                        Text("No debts", style: TextStyle(color: Colors.grey)),
-                  )
-                else
-                  ...debts.map((d) => _buildTile(d, false)),
-              ],
-            );
-          } else if (state is DebtFailure) {
-            return Center(child: Text("Error: ${state.message}"));
-          } else {
-            return const SizedBox();
-          }
-        },
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: ListView(
+                  children: [
+                    const SizedBox(height: 16),
+                    const Text(
+                      "Debt & Loan Tracker",
+                      style:
+                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Loans Given Section
+                    const Text("Loans Given",
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    if (loans.isEmpty)
+                      const Text("No loans",
+                          style: TextStyle(color: Colors.grey))
+                    else
+                      ...loans.map((d) => _buildTile(d, true)),
+
+                    const SizedBox(height: 24),
+
+                    // Debts Taken Section
+                    const Text("Debts Taken",
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    if (debts.isEmpty)
+                      const Text("No debts",
+                          style: TextStyle(color: Colors.grey))
+                    else
+                      ...debts.map((d) => _buildTile(d, false)),
+
+                    const SizedBox(height: 80),
+                  ],
+                ),
+              );
+            } else if (state is DebtFailure) {
+              return Center(child: Text("Error: ${state.message}"));
+            } else {
+              return const SizedBox();
+            }
+          },
+        ),
       ),
       floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.blue,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
         onPressed: () {
           Navigator.push(
             context,
@@ -82,14 +99,32 @@ class _DebtScreenState extends State<DebtScreen> {
   }
 
   Widget _buildTile(debt, bool isLoan) {
-    return Card(
+    return Container(
       margin: const EdgeInsets.symmetric(vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4)],
+      ),
       child: ListTile(
-        leading: Icon(isLoan ? Icons.arrow_upward : Icons.arrow_downward,
-            color: isLoan ? Colors.green : Colors.red),
-        title: Text("${debt.person} - \$${debt.amount.toStringAsFixed(2)}"),
-        subtitle: Text(
-            "Due: ${debt.dueDate.toLocal().toString().split(' ')[0]}\nNote: ${debt.note}"),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        leading: Icon(
+          isLoan ? Icons.arrow_upward : Icons.arrow_downward,
+          color: isLoan ? Colors.green : Colors.red,
+          size: 28,
+        ),
+        title: Text(
+          "${debt.person} - \$${debt.amount.toStringAsFixed(2)}",
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: Text(
+            "Due: ${debt.dueDate.toLocal().toString().split(' ')[0]}\nNote: ${debt.note}",
+            style: const TextStyle(height: 1.4),
+          ),
+        ),
         isThreeLine: true,
         trailing: Row(
           mainAxisSize: MainAxisSize.min,

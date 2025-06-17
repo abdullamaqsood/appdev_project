@@ -218,12 +218,16 @@ class _BudgetScreenState extends State<BudgetScreen> {
 
                         return Column(
                           children: state.budgets.map((budget) {
-                            return Card(
+                            return Container(
                               margin: const EdgeInsets.only(bottom: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: const [
+                                  BoxShadow(
+                                      color: Colors.black12, blurRadius: 4)
+                                ],
                               ),
-                              elevation: 4,
                               child: ListTile(
                                 leading: const Icon(Icons.wallet, size: 28),
                                 title: Text(
