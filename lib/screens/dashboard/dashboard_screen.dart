@@ -136,6 +136,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     // Ask user: PDF or CSV?
     final choice = await showModalBottomSheet<String>(
       context: context,
+      backgroundColor: Colors.white,
       builder: (context) => Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -266,6 +267,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.white,
         title: Text(type == 'income' ? 'Income Details' : 'Expense Details'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -352,6 +354,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: ListView(
         children: [
           const SizedBox(height: 16),
+
+          // Header Row
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -360,9 +364,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   CircleAvatar(
                     backgroundImage: NetworkImage(
                         "https://t3.ftcdn.net/jpg/02/99/04/20/360_F_299042079_vGBD7wIlSeNl7vOevWHiL93G4koMM967.jpg"),
-                    radius: 24,
+                    radius: 22,
                   ),
-                  SizedBox(width: 10),
+                  SizedBox(width: 12),
                   Text(
                     "Hey, Abdullah!",
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
@@ -370,7 +374,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ],
               ),
               IconButton(
-                icon: const Icon(Icons.notifications_outlined, size: 28),
+                icon: const Icon(Icons.notifications_outlined, size: 26),
                 onPressed: () {
                   Navigator.push(
                     context,
@@ -382,7 +386,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ],
           ),
+
           const SizedBox(height: 24),
+
+          // Dashboard Data
           BlocBuilder<DashboardBloc, DashboardState>(
             builder: (context, state) {
               if (state is DashboardLoading) {
@@ -408,7 +415,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         'rawAmount': e.amount,
                         'date': e.date,
                         'color': Colors.red,
-                        'icon': Icons.remove_circle_outline,
+                        'icon': Icons.arrow_downward,
                         'category': e.category,
                       }),
                   ...state.incomes.map((i) => {
@@ -420,7 +427,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         'rawAmount': i.amount,
                         'date': i.date,
                         'color': Colors.green,
-                        'icon': Icons.add_circle_outline,
+                        'icon': Icons.arrow_upward,
                         'category': null,
                       }),
                 ];
@@ -431,6 +438,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Balance
                     Text(
                       '\$${balance.toStringAsFixed(2)}',
                       style: const TextStyle(
@@ -440,8 +448,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                     ),
                     const Text("Total Balance",
-                        style: TextStyle(color: Colors.grey)),
+                        style: TextStyle(color: Colors.black54)),
                     const SizedBox(height: 24),
+
+                    // Stat Cards
                     Row(
                       children: [
                         _buildStatCard("Income", totalIncome, Colors.green),
@@ -449,14 +459,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         _buildStatCard("Expense", totalExpense, Colors.red),
                       ],
                     ),
-                    const SizedBox(height: 24),
+
+                    const SizedBox(height: 28),
+
+                    // Recent Transactions Title Row
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text("Recent Transactions",
                             style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.w600)),
-                        TextButton(
+                                fontSize: 18, fontWeight: FontWeight.bold)),
+                        TextButton.icon(
                           onPressed: () {
                             final state = context.read<DashboardBloc>().state;
                             if (state is DashboardLoaded) {
@@ -497,18 +510,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   totalExpense, balance);
                             }
                           },
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: const [
-                              Text("Download"),
-                              SizedBox(width: 4),
-                              Icon(Icons.file_download, size: 20),
-                            ],
-                          ),
+                          icon: const Icon(Icons.file_download, size: 20),
+                          label: const Text("Download"),
                         ),
                       ],
                     ),
+
                     const SizedBox(height: 16),
+
+                    // Transaction List
                     transactions.isEmpty
                         ? const Text("No recent transactions.")
                         : Column(
@@ -588,6 +598,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               );
                             }).toList(),
                           ),
+
                     const SizedBox(height: 80),
                   ],
                 );

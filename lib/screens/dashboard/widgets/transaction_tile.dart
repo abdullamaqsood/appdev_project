@@ -22,32 +22,80 @@ class TransactionTile extends StatelessWidget {
     this.onTap,
   });
 
+  bool get isIncome => amountColor == Colors.green;
+
   @override
   Widget build(BuildContext context) {
-    final String displayTitle = category != null && category!.isNotEmpty
-        ? "$title (${category!})"
-        : title;
-
     return GestureDetector(
       onTap: onTap,
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(vertical: 4),
-        leading: CircleAvatar(
-          backgroundColor: Colors.grey.shade200,
-          child: Icon(icon, color: Colors.black),
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 6),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4)],
         ),
-        title: Text(displayTitle,
-            style: const TextStyle(fontWeight: FontWeight.w600)),
-        subtitle: Text(subtitle),
-        trailing: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.end,
+        child: Row(
           children: [
-            Text(amount,
-                style:
-                    TextStyle(color: amountColor, fontWeight: FontWeight.w600)),
-            Text(date,
-                style: const TextStyle(fontSize: 12, color: Colors.grey)),
+            CircleAvatar(
+              radius: 24,
+              backgroundColor: Colors.grey.shade100,
+              child: Icon(
+                isIncome ? Icons.arrow_upward : Icons.arrow_downward,
+                color: isIncome ? Colors.green : Colors.red,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  if (category != null && category!.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: Text(
+                        'Category: ${category!}',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: Colors.black54,
+                        ),
+                      ),
+                    ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(color: Colors.black54),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  amount,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: amountColor,
+                    fontSize: 15,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  date,
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+              ],
+            ),
           ],
         ),
       ),

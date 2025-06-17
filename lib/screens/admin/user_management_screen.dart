@@ -38,9 +38,13 @@ class UserManagementScreen extends StatelessWidget {
     return BlocProvider(
       create: (_) => UserManagementBloc(AuthRepository())..add(LoadUsers()),
       child: Scaffold(
+        backgroundColor: const Color(0xFFEFF3F9),
         appBar: AppBar(
           title: const Text('User Management'),
           centerTitle: true,
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black87,
+          elevation: 1,
           actions: [
             IconButton(
               icon: const Icon(Icons.logout),
@@ -53,7 +57,6 @@ class UserManagementScreen extends StatelessWidget {
             ),
           ],
         ),
-        backgroundColor: const Color(0xFFEFF3F9),
         body: BlocConsumer<UserManagementBloc, UserManagementState>(
           listener: (context, state) {
             if (state is UserDeleted) {
@@ -83,18 +86,34 @@ class UserManagementScreen extends StatelessWidget {
                   context.read<UserManagementBloc>().add(LoadUsers());
                 },
                 child: ListView.separated(
+                  padding: const EdgeInsets.all(16),
                   itemCount: users.length,
-                  separatorBuilder: (_, __) => const Divider(height: 1),
+                  separatorBuilder: (_, __) => const SizedBox(height: 12),
                   itemBuilder: (context, index) {
                     final user = users[index];
-                    return ListTile(
-                      leading: const Icon(Icons.person),
-                      title: Text(user['email'] ?? 'No Email'),
-                      subtitle: Text('Role: ${user['role'] ?? 'unknown'}'),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.delete, color: Colors.red),
-                        onPressed: () => _deleteUser(
-                            context, user['uid'], user['email'] ?? ''),
+                    return Material(
+                      elevation: 1,
+                      borderRadius: BorderRadius.circular(12),
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 12),
+                        tileColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        leading: CircleAvatar(
+                          backgroundColor: Colors.blue.shade100,
+                          child: const Icon(Icons.person, color: Colors.black),
+                        ),
+                        title: Text(user['email'] ?? 'No Email',
+                            style:
+                                const TextStyle(fontWeight: FontWeight.w600)),
+                        subtitle: Text('Role: ${user['role'] ?? 'unknown'}'),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                          onPressed: () => _deleteUser(
+                              context, user['uid'], user['email'] ?? ''),
+                        ),
                       ),
                     );
                   },
